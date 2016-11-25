@@ -14,9 +14,9 @@
         <div class='pull-right'>
           <%= link_to "Modifier", edit_admin_entourage_path(@entourage), class: "btn btn-success" %>
         </div>
-        <%- if current_user.admin? && !current_user.entourage_participations.pluck(:id).include?(@entourage.id) %>
+        <%- if current_user.admin? && !@entourage.has_user?(current_user.id) %>
           <div class='pull-right'>
-            <%= link_to "Rejoindre l'entourage", admin_entourage_invitations_path(entourage_id: @entourage.id), method: :post, class: "btn btn-success" %>
+            <%= link_to "Rejoindre l'entourage", admin_entourage_invitations_path(entourage_id: @entourage.id), method: :post, confirm: 'Êtes-vous sûr(e) ?', class: "btn btn-success" %>
           </div>
         <% end %>
       </div>
@@ -29,7 +29,7 @@
     <%= render partial: "admin/entourages/show/details", entourage: @entourage %>
     <%= render partial: "admin/entourages/show/members_list", members: @members %>
     <%= render partial: "admin/entourages/show/invitations_list", invitations: @invitations %>
-    <!-- <%= render partial: "admin/entourages/show/join_requests_list", join_requests: @join_requests %> -->
+    <%= render partial: "admin/entourages/show/join_requests_list", join_requests: @join_requests %>
     <%= render partial: "admin/entourages/show/chat_messages_list", chat_messages: @chat_messages %>
   </div>
   <!-- <div class="panel-footer"></div> -->

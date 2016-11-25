@@ -15,7 +15,7 @@ module Admin
 
       join_request_builder.create do |on|
         on.success do |join_request|
-          redirect_to admin_entourage_path(entourage), notice: "Vous avez bien rejoint l'entourage."
+          redirect_to admin_entourage_path(entourage), notice: "Vous avez bien demandé à rejoindre l'entourage."
         end
 
         on.failure do |join_request|

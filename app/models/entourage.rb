@@ -21,4 +21,8 @@ class Entourage < ActiveRecord::Base
   def freezed?
     false
   end
+
+  def has_user? user_id
+    join_requests.pluck(:user_id).include?(user_id)
+  end
 end

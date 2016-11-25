@@ -11,7 +11,7 @@ module Admin
 
     def show
       @members       = @entourage.members
-      @join_requests = @entourage.join_requests.includes(:user)
+      @join_requests = @entourage.join_requests.where.not(status: :accepted).includes(:user)
       @invitations   = @entourage.entourage_invitations.includes(:invitee)
       @chat_messages = @entourage.chat_messages.includes(:user)
     end

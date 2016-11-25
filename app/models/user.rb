@@ -92,4 +92,5 @@ class User < ActiveRecord::Base
   def validate!
     update(validation_status: "validated")
   end
+
 end
