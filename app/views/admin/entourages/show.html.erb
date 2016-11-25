@@ -14,6 +14,11 @@
         <div class='pull-right'>
           <%= link_to "Modifier", edit_admin_entourage_path(@entourage), class: "btn btn-success" %>
         </div>
+        <%- if current_user.admin? && !current_user.entourage_participations.pluck(:id).include?(@entourage.id) %>
+          <div class='pull-right'>
+            <%= link_to "Rejoindre l'entourage", admin_entourage_invitations_path(entourage_id: @entourage.id), method: :post, class: "btn btn-success" %>
+          </div>
+        <% end %>
       </div>
     </div>
 
