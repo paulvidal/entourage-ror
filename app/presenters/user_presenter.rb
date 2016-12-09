@@ -11,10 +11,6 @@ class UserPresenter < ApplicationPresenter
     @user.organization.users.order("upper(first_name) ASC")
   end
 
-  def can_send_push?
-    user.device_id.present?
-  end
-
   def user_default
     PreferenceServices::UserDefault.new(user: user)
   end
