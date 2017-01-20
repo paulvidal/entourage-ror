@@ -42,6 +42,10 @@ class Entourage < ActiveRecord::Base
     false
   end
 
+  def approximated_location
+    Geocoder.search("#{latitude}, #{longitude}").first.address_components_of_type(:route)
+  end
+
   protected
 
   def check_moderation
