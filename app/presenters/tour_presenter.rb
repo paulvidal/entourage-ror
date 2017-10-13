@@ -25,6 +25,22 @@ class TourPresenter
     tour.simplified_tour_points.ordered.map {|point| {long: point.longitude, lat: point.latitude} }
   end
 
+  def kalman_tour_points
+    points = tour.tour_points.ordered.to_a
+    return simplified_tour_points if points.any? { |p| p.accuracy.nil? }
+
+    filter = KalmanLatLng.new
+    points.map do |point|
+      lat, lng = filter.process(
+        lat: point.latitude,
+        lng: point.longitude,
+        accuracy: point.accuracy,
+        timestamp: point.passing_time
+      )
+      {long: lng, lat: lat}
+    end
+  end
+
   def can_see_detail?
     Authentication::UserTourAuthenticator.new(user: current_user, tour: @tour).allowed_to_see?
   end
@@ -69,5 +85,48 @@ class TourPresenter
 
   def end_time
     @end_time ||= tour.closed_at.try(:strftime, "%H:%M")
+  end
+
+  # https://stackoverflow.com/a/15657798/1003545
+  class KalmanLatLng
+    MIN_ACCURACY = 1 # meters
+
+    def initialize(q = 3) # meters per second
+      @q = q # free parameter. describes how quickly the accuracy decays in the absence of any new location estimates
+      @variance = nil # P matrix. NB: units irrelevant, as long as same units used throughout
+    end
+
+    # accuracy: standard deviation error in meters
+    # timestamp: time of measurement in seconds
+    def process(lat:, lng:, accuracy:, timestamp:)
+      accuracy = [MIN_ACCURACY, accuracy].max
+
+      if @variance.nil?
+        # if variance is nil, object is unitialised, so initialise with current values
+        @timestamp = timestamp
+        @lat = lat
+        @lng = lng
+        @variance = accuracy * accuracy
+      else
+        # else apply Kalman filter methodology
+        time_increase = timestamp - @timestamp
+        # time has moved on, so the uncertainty in the current position increases
+        if time_increase > 0
+          @variance += time_increase * @q * @q
+          @timestamp = timestamp
+        end
+
+        # Kalman gain matrix K = Covarariance * Inverse(Covariance + MeasurementVariance)
+        # NB: because K is dimensionless, it doesn't matter that variance has different units to lat and lng
+        k = @variance / (@variance + accuracy * accuracy)
+        # apply K
+        @lat += k * (lat - @lat)
+        @lng += k * (lng - @lng)
+        # new Covarariance  matrix is (IdentityMatrix - K) * Covarariance
+        @variance = (1 - k) * @variance;
+      end
+
+      [@lat, @lng]
+    end
   end
 end

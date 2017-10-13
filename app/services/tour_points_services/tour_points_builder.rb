@@ -2,7 +2,7 @@ module TourPointsServices
   class TourPointsBuilder < Struct.new(:tour, :params, :fail_with)
     def create
       begin
-        sql = "INSERT INTO tour_points (passing_time, latitude, longitude, tour_id, created_at, updated_at) VALUES #{values}"
+        sql = "INSERT INTO tour_points (passing_time, latitude, longitude, accuracy, tour_id, created_at, updated_at) VALUES #{values}"
         ActiveRecord::Base.transaction do
           ActiveRecord::Base.connection.execute(sql)
         end
@@ -30,6 +30,7 @@ module TourPointsServices
         passing_time: "'#{p["passing_time"]}'",
         latitude: p["latitude"].to_s,
         longitude: p["longitude"].to_s,
+        accuracy: format_accuracy(p["accuracy"]),
         tour_id: tour.id,
         created_at: "'#{now}'",
         updated_at: "'#{now}'"
@@ -42,6 +43,13 @@ module TourPointsServices
 
     def params_array
       params.is_a?(Array) ? params : [params]
+    end
+
+    def format_accuracy string
+      return 'null' if string.blank?
+      accuracy = string.to_f.round(1)
+      return 'null' if accuracy >= 1000 || accuracy <= 0
+      accuracy.to_s
     end
   end
 

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171017114301) do
+ActiveRecord::Schema.define(version: 20171031161231) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -381,12 +381,13 @@ ActiveRecord::Schema.define(version: 20171017114301) do
   end
 
   create_table "tour_points", force: :cascade do |t|
-    t.float    "latitude",     null: false
-    t.float    "longitude",    null: false
-    t.integer  "tour_id",      null: false
-    t.datetime "passing_time", null: false
+    t.float    "latitude",                             null: false
+    t.float    "longitude",                            null: false
+    t.integer  "tour_id",                              null: false
+    t.datetime "passing_time",                         null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.decimal  "accuracy",     precision: 4, scale: 1
   end
 
   add_index "tour_points", ["tour_id", "latitude", "longitude"], name: "index_tour_points_on_tour_id_and_latitude_and_longitude", using: :btree

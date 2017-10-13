@@ -9,9 +9,10 @@ RSpec.describe Api::V1::TourPointsController, :type => :controller do
     let!(:tour_point) { FactoryGirl.build :tour_point }
     
     context "within existing tour" do
-      before { post 'create', tour_id: tour.id, token: user.token, tour_points: [{latitude: tour_point.latitude, longitude: tour_point.longitude, passing_time: tour_point.passing_time.iso8601(3)}], :format => :json }
+      before { post 'create', tour_id: tour.id, token: user.token, tour_points: [{latitude: tour_point.latitude, longitude: tour_point.longitude, passing_time: tour_point.passing_time.iso8601(3), accuracy: tour_point.accuracy}], :format => :json }
       it { expect(response.status).to eq(201) }
       it { expect(JSON.parse(response.body)).to eq({"status"=>"ok"}) }
+      it { expect(TourPoint.last.accuracy).to eq tour_point.accuracy }
     end
 
     context "tour has no location" do
