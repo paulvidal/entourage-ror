@@ -182,6 +182,12 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :links, only: [] do
+        member do
+          get :redirect
+        end
+      end
+
       put 'applications' => 'user_applications#update'
       post 'login' => 'users#login'
       get 'check' => 'base#check'
