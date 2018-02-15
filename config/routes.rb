@@ -247,6 +247,13 @@ Rails.application.routes.draw do
   get 'ping' => 'application#ping'
   get 'redirect/:signature/*url' => 'redirection#redirect', format: false, as: :escaped_redirect
 
+  namespace :plivo do
+    post :sms
+    post :call
+    post :event
+    post :hangup
+  end
+
   #PUBLIC USER
   namespace :public_user do
     root to: "users#edit"
