@@ -1,81 +1,93 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+echo $-
+set -o errexit
+set -o pipefail
+set -o nounset
+echo $-
+exit
 
-RUBY_VERSION="2.3.1"
-RUBY_INSTALL_VERSION="0.6.1"
+RUBY_MINOR="2.3"
 CHRUBY_VERSION="0.3.9"
 
 
-# install dependencies
-cat <<EOF | sudo tee /etc/default/locale
-LC_ALL=en_US.UTF-8
-LANG=en_US.UTF-8
-EOF
+###
+# Install dependencies
+###
 
+export DEBIAN_FRONTEND=noninteractive
+
+sudo apt-add-repository ppa:brightbox/ruby-ng
+sudo apt-add-repository ppa:chris-lea/redis-server
 sudo apt-get -yqq update
 sudo apt-get -yqq install \
-  build-essential \
+  ruby$RUBY_MINOR ruby$RUBY_MINOR-dev \
   nodejs \
   postgresql postgresql-contrib postgis libpq-dev \
-  redis-server libsqlite3-dev
+  redis-server \
+  libsqlite3-dev \
+  build-essential
 
 
 ###
-# Install ruby
+# Install ruby version manager (chruby)
 ###
 
-mkdir ruby
-cd ruby
-
-# add postmodern PGP key
-wget https://raw.github.com/postmodern/postmodern.github.io/master/postmodern.asc
-gpg --import postmodern.asc
-
-# install ruby-install
-wget -q "https://raw.github.com/postmodern/ruby-install/master/pkg/ruby-install-$RUBY_INSTALL_VERSION.tar.gz.asc"
-wget -qO "ruby-install-$RUBY_INSTALL_VERSION.tar.gz" "https://github.com/postmodern/ruby-install/archive/v$RUBY_INSTALL_VERSION.tar.gz"
-gpg --verify "ruby-install-$RUBY_INSTALL_VERSION.tar.gz.asc" "ruby-install-$RUBY_INSTALL_VERSION.tar.gz"
-tar -xzvf "ruby-install-$RUBY_INSTALL_VERSION.tar.gz"
-cd "ruby-install-$RUBY_INSTALL_VERSION/"
+cd /tmp
+wget --quiet --output-document=chruby.tar.gz "https://github.com/postmodern/chruby/archive/v$CHRUBY_VERSION.tar.gz"
+tar -xzf chruby.tar.gz
+cd chruby-$CHRUBY_VERSION
 sudo make install
 
-# install pinned ruby version
-ruby-install ruby $RUBY_VERSION
 
-# install chruby
-wget -q "https://raw.github.com/postmodern/chruby/master/pkg/chruby-$CHRUBY_VERSION.tar.gz.asc"
-wget -qO "chruby-$CHRUBY_VERSION.tar.gz" "https://github.com/postmodern/chruby/archive/v$CHRUBY_VERSION.tar.gz"
-gpg --verify "chruby-$CHRUBY_VERSION.tar.gz.asc" "chruby-$CHRUBY_VERSION.tar.gz"
-tar -xzvf "chruby-$CHRUBY_VERSION.tar.gz"
-cd "chruby-$CHRUBY_VERSION/"
-sudo make install
-echo 'source /usr/local/share/chruby/chruby.sh' >> ~/.bashrc
-echo 'chruby ruby' >> ~/.bashrc
+# create links to the new ruby version in /opt/rubies
+# for use with chruby
+
+RUBY_VERSION=$(ruby$RUBY_MINOR -e 'puts "#{RUBY_ENGINE}-#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"')
+sudo mkdir -p /opt/rubies/$RUBY_VERSION/bin
+sudo chown -R $USER:$USER /opt/rubies
+for command in gem irb rake ruby; do
+  ln -s $(which $command$RUBY_MINOR) /opt/rubies/$RUBY_VERSION/bin/$command
+done
+
+
+# write chruby config to .bashrc
+
+cat <<EOF >> ~/.bashrc
+
+# chruby
 source /usr/local/share/chruby/chruby.sh
+chruby ${RUBY_VERSION}
+EOF
 
-# activate our ruby version
-chruby ruby
 
-# cleanup
-cd ..
-rm -rf ruby
+# source .bashrc in interactive mode to init chruby
+# also temporarily disable nounset and errexit
+
+echo $-
+set -i +u +e
+echo $-
+source ~/.bashrc
+set +i -u -e
+echo $-
 
 ###
-# /Install ruby
-###
-
-
 # Configure PostgreSQL authentication
+###
+
 sudo -u postgres createuser --superuser --createdb entourage || true
 sudo sed -i 's|^\(local .*\) peer$|\1 trust|' /etc/postgresql/*/main/pg_hba.conf
 sudo sed -i 's|^\(host .*\) md5$|\1 trust|' /etc/postgresql/*/main/pg_hba.conf
 sudo service postgresql reload
 
+
+###
 # Setup app
-cd /home/vagrant/entourage-ror
+###
+
+cd ~/entourage-ror
 echo 'gem: --no-document' >> ~/.gemrc
 gem install bundler
-bundle install --without production
-bundle exec rake db:drop db:create db:migrate
-bundle exec rake RAILS_ENV=test db:drop db:create db:migrate
+bundle install --binstubs --without production
+rake db:drop db:create db:migrate
+rake RAILS_ENV=test db:drop db:create db:migrate
