@@ -1,1 +1,1 @@
-$redis = Redis.new(url: ENV["REDIS_URL"])
+$redis = Redis::Store.new(url: ENV["REDIS_URL"])

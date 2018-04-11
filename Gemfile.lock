@@ -236,6 +236,8 @@ GEM
       pry (>= 0.9.10)
     puma (2.12.3)
     rack (1.6.9)
+    rack-attack (5.2.0)
+      rack
     rack-mini-profiler (0.10.7)
       rack (>= 1.2.0)
     rack-protection (1.5.5)
@@ -282,6 +284,8 @@ GEM
     redis (3.2.1)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
+    redis-store (1.4.1)
+      redis (>= 2.2, < 5)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -446,6 +450,7 @@ DEPENDENCIES
   pg (~> 0.18.2)
   pry-rails (~> 0.3.4)
   puma (~> 2.12.2)
+  rack-attack
   rack-mini-profiler (~> 0.10.1)
   rack-timeout (~> 0.4.2)
   rails (~> 4.2.10)
@@ -453,6 +458,7 @@ DEPENDENCIES
   rails_stdout_logging (~> 0.0.5)
   ransack
   redis (~> 3.2.1)
+  redis-store
   rpush (~> 2.7.0)
   rspec-rails (~> 3.1)
   ruby-stemmer

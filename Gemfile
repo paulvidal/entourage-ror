@@ -38,6 +38,8 @@ gem 'mixpanel-ruby'
 gem 'httparty'
 gem 'sentry-raven'
 gem 'ruby-stemmer'
+gem 'redis-store'
+gem 'rack-attack'
 
 group :development, :test do
   gem 'annotate'
