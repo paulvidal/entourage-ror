@@ -3,9 +3,10 @@ class Community < BasicObject
   include ::PP::ObjectMixin if defined?(::PP)
   attr_reader :community
 
+  @@struct = {}
+
   def initialize community
     @community = community
-    @file = ::File.expand_path("../communities/#{community}.yml", __FILE__)
     load!
   end
 
@@ -24,14 +25,8 @@ class Community < BasicObject
     if ::Rails.env.development?
       load!
     else
-      @struct || load!
+      @struct || @@struct[community] || load!
     end
-  end
-
-  def load!
-    @struct = ::OpenStruct.new(::YAML.load_file(@file))
-  rescue ::Errno::ENOENT
-    raise "Community '#{community}' is not defined"
   end
 
   def inspect
@@ -48,7 +43,13 @@ class Community < BasicObject
       raise ::ArgumentError, "comparison of Community with #{other.class.name} failed"
     end
   end
-end
 
-raise "Environment variable COMMUNITY must be set" if ENV['COMMUNITY'].blank?
-$community = Community.new ENV['COMMUNITY']
+  private
+
+  def load!
+    @file ||= ::File.expand_path("../communities/#{community}.yml", __FILE__)
+    @@struct[community] = @struct = ::OpenStruct.new(::YAML.load_file(@file))
+  rescue ::Errno::ENOENT
+    raise "Community '#{community}' is not defined"
+  end
+end

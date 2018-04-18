@@ -72,6 +72,17 @@ module Api
         @api_request ||= ApiRequest.new(params: params, headers: headers, env: request.env)
       end
 
+      def community
+        @community ||= begin
+          key_infos = api_request.key_infos
+          if key_infos
+            Community.new(api_request.key_infos[:community])
+          else
+            $server_community
+          end
+        end
+      end
+
       def mixpanel
         @mixpanel ||= MixpanelService.new(
           distinct_id: current_user.try(:id),
