@@ -47,7 +47,7 @@
       <td>
         <% requests_count = @requests_count[entourage.id] %>
         <% if requests_count[:total] > 0 %>
-          <span class="badge" style="<%= 'background: #d9534f' if requests_count[:late] > 0 %>">
+          <span class="badge" style="<%= 'background: #d9534f' if requests_count[:late] > 0 && !@reminded_users.include?(entourage.user_id) %>">
             <%= requests_count[:total] %>
           </span>
         <% end %>
