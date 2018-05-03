@@ -108,15 +108,11 @@ class Entourage < ActiveRecord::Base
   end
 
   def community
-    if Rails.env != 'production' && Entourage.columns_hash['community'].null == false
-      raise "This workaround must now be removed"
-    end
-
-    if super.present?
-      Community.new(super)
-    elsif user.present?
-      user.community
-    end
+    slug = super
+    return slug if slug.blank?
+    Community.new(slug)
+  rescue Community::NotFound
+    slug
   end
 
   protected

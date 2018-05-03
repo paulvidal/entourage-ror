@@ -16,6 +16,12 @@ class Community < BasicObject
     ::User.where(community: slug)
   end
 
+  def cast_value(value)
+    value.to_s.strip
+  end
+  # https://blog.arkency.com/2016/03/custom-typecasting-with-activerecord-virtus-and-dry-types/
+  # https://github.com/rails/rails/blob/v4.2.10/activerecord/lib/active_record/type/value.rb
+
   def method_missing name, *args
     super if args.any?
     return self == $1 if name =~ /^(.*)\?$/

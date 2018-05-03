@@ -1,4 +1,5 @@
 require 'rails_helper'
+include CommunityHelper
 
   describe Api::V1::FeedsController do
 
@@ -97,6 +98,14 @@ require 'rails_helper'
                                                     "heatmap_size" => 20
                                              }
         ]}) }
+      end
+
+      context "signed in as an user from another community" do
+        with_community 'pfp'
+        let(:user) { FactoryGirl.create(:public_user, community: 'pfp') }
+        before { get :index, token: user.token, show_tours: "true", announcements: "v1" }
+        it { expect(response.status).to eq(200) }
+        it { expect(result).to eq({}) }
       end
 
       context "get entourages around location" do
