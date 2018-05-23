@@ -44,3 +44,20 @@ fr:
       action_zone:
         country: Pays
         postal_code: Code postal
+
+      announcement:
+        title: Titre
+        icon: Icône
+        body: Description
+        action: Bouton
+        url: Lien
+        webview: Afficher dans une webview
+        status: État
+        human_position: Position dans le feed
+
+  admin:
+    announcements:
+      status_headers:
+        active: Actives
+        test: En test
+        inactive: Inactives

@@ -85,6 +85,7 @@ Rails.application.routes.draw do
     resources :entourages, only: [:index, :show, :edit, :update]
     resources :marketing_referers, only: [:index, :edit, :update, :new, :create]
     resources :join_requests, only: [:create]
+    resources :announcements, only: [:index, :new, :create, :edit, :update]
 
     get 'public_user_search' => "users_search#public_user_search"
     get 'public_user_autocomplete' => "users_search#public_user_autocomplete"
