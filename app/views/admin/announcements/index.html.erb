@@ -1,0 +1,28 @@
+<h1>Cartes d'annonce</h1>
+<table class="table">
+  <% ['active', 'test', 'inactive'].each do |status| %>
+    <% next if @announcements[status].nil? %>
+    <tr>
+      <td colspan="4">
+        <h2><%= t "admin.announcements.status_headers.%s" % status %></h2>
+      </td>
+    </tr>
+    <% @announcements[status].each do |a| %>
+      <tr>
+        <td><%= a.human_position if a.status != 'inactive' %></td>
+        <td><%= link_to a.title, [:edit, :admin, a] %></td>
+        <td><%= l a.created_at, format: '%-d %B %Y' %></td>
+        <td>
+          <% case a.status %>
+          <% when 'active' %>
+            <span class="label label-success">active</span>
+          <% when 'test' %>
+            <span class="label label-warning">test</span>
+          <% when 'inactive' %>
+            <span class="label label-default">inactive</span>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+</table>

@@ -42,18 +42,17 @@ module Onboarding
       entourage_id
     end
 
+    def self.announcement
+      Announcement.find(5)
+    end
+
     def self.announcement_for area, user:
       return if user.pro?
       entourage_id = ENTOURAGES[area]
       return if entourage_id.nil?
-      Announcement.new(
-        id: 5,
-        title: "#{user.first_name}, on n'attend plus que vous !",
-        body: "Conseils, rencontres, idées d'action... Rentrez en contact avec les personnes du quartier.",
-        action: "C'est parti !",
-        url: "#{ENV['DEEPLINK_SCHEME']}://entourage/#{entourage_id}",
-        author: User.find_by(email: "guillaume@entourage.social"),
-        position: 1
+      Announcement::Feed.substitute(
+        announcement,
+        entourage_id: entourage_id
       )
     end
 

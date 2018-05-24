@@ -21,7 +21,7 @@ module FeedServices
 
       announcements.each do |announcement|
         position = [feeds.length, announcement.position].min
-        feeds.insert(position, announcement.feed_object)
+        feeds.insert(position, announcement.feed_object(user: user))
       end
 
       [feeds, @metadata]
@@ -30,54 +30,21 @@ module FeedServices
     private
 
     def select_announcements
-      announcements = []
+      announcements = {}
+
+      Announcement.where(status: :active).each { |a| announcements[a.position] = a }
+
+      if user.admin?
+        Announcement.where(status: :test).each { |a| announcements[a.position] = a }
+      end
 
       onboarding_announcement = Onboarding::V1.announcement_for(area, user: user)
-
       if onboarding_announcement
-        announcements.push onboarding_announcement
+        announcements[onboarding_announcement.position] = onboarding_announcement
         @metadata.merge!(onboarding_announcement: true, area: area)
-      else
-        announcements.push Announcement.new(
-          id: 9,
-          title: "Fête des Voisins 2018 : invitez vos voisins SDF !",
-          body: "vendredi 25 mai 2018, invitons TOUS les voisins à partager un moment : parlez-en aux personnes sans-abri de votre quartier",
-          action: "J'agis",
-          author: User.find_by(email: "guillaume@entourage.social"),
-          webview: true,
-          position: 1
-        )
       end
 
-      announcements.push Announcement.new(
-        id: 3,
-        title: with_first_name("ne manquez pas les actions autour de vous !"),
-        body: "Définissez votre zone d'action pour être tenu(e) informé(e) des actions dans votre quartier.",
-        action: "Définir ma zone",
-        author: User.find_by(email: "guillaume@entourage.social"),
-        webview: true,
-        position: 5
-      )
-
-      announcements
-    end
-
-    def with_first_name text
-      if first_name.present?
-        "#{first_name}, #{text}"
-      else
-        text.capitalize
-      end
-    end
-
-    def first_name
-      @first_name ||=
-        (user.first_name || "")
-        .scan(/[[:alpha:]]+|[^[:alpha:]]+/)
-        .map(&:capitalize)
-        .join
-        .strip
-        .presence
+      announcements.sort_by(&:first).map(&:last)
     end
   end
 end
