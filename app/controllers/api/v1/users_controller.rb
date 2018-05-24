@@ -102,7 +102,7 @@ module Api
       #curl -H "X-API-KEY:adc86c761fa8" -H "Content-Type: application/json" "http://localhost:3000/api/v1/users/me.json?token=azerty"
       def show
         user = params[:id] == "me" ? current_user : community.users.find(params[:id])
-        render json: user, status: 200, serializer: ::V1::UserSerializer, scope: { user: current_user, full_partner: true }
+        render json: user, status: 200, serializer: ::V1::UserSerializer, scope: { user: current_user, full_partner: true, memberships: true }
       end
 
       def destroy
