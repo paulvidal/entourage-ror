@@ -1,3 +1,4 @@
+require 'experimental/jsonb_with_schema'
 # == Schema Information
 #
 # Table name: entourages
@@ -113,6 +114,7 @@ class Entourage < ActiveRecord::Base
 
   # https://github.com/rails/rails/blob/v4.2.10/activerecord/lib/active_record/attributes.rb
   attribute :community, Community::Type.new
+  attribute :metadata, Experimental::JsonbWithSchema.new
 
   def group_type_config
     @group_type_config ||= community.group_types[group_type]
