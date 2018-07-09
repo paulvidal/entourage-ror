@@ -44,6 +44,7 @@ FactoryGirl.define do
 
     factory :outing do
       group_type "outing"
+      metadata starts_at: 1.day.from_now.change(hour: 19).iso8601
     end
 
     factory :conversation do

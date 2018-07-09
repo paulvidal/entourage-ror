@@ -1,4 +1,5 @@
 require 'rails_helper'
+include CommunityHelper
 
 RSpec.describe Entourage, type: :model do
   it { expect(FactoryGirl.build(:entourage).save!).to be true }
@@ -48,6 +49,18 @@ RSpec.describe Entourage, type: :model do
       stub_request(:any, "https://hooks.slack.com").to_return(body: "abc", status: 200)
       entourage.should_receive :ping_slack
       entourage.save
+    end
+  end
+
+  describe "metadata" do
+    with_community :pfp
+    let!(:past)   { create :outing, metadata: {starts_at: 1.day.ago     } }
+    let!(:future) { create :outing, metadata: {starts_at: 1.day.from_now} }
+    it do
+      p Entourage.pluck("metadata->'starts_at'")
+      req = Entourage.where(group_type: :outing).where("(metadata->'starts_at')::text < ?", Time.now)
+      puts req.to_sql
+      p req
     end
   end
 

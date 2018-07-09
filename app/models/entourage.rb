@@ -52,6 +52,7 @@ class Entourage < ActiveRecord::Base
   validates_uniqueness_of :uuid, on: :create
   validates_inclusion_of :community, in: Community.slugs
   validates_inclusion_of :group_type, in: -> (e) { e.community&.group_types&.keys || [] }
+  validates :metadata, schema: :metadata_schema
 
   scope :visible, -> { where.not(status: 'blacklisted') }
   scope :social_category, -> { where(category: 'social') }
@@ -112,17 +113,6 @@ class Entourage < ActiveRecord::Base
 
   # https://github.com/rails/rails/blob/v4.2.10/activerecord/lib/active_record/attributes.rb
   attribute :community, Community::Type.new
-
-  def metadata
-    case group_type
-    when 'private_circle'
-      { 'visited_user_first_name' => (title || "").gsub(/\ALes amis (de |d')/, '') }
-    when 'outing'
-      { 'starts_at' => 1.day.from_now.change(hour: 19, min: 30) }
-    else
-      {}
-    end
-  end
 
   def group_type_config
     @group_type_config ||= community.group_types[group_type]
@@ -187,6 +177,43 @@ class Entourage < ActiveRecord::Base
 
   def self.generate_uuid_v2
     'e' + SecureRandom.urlsafe_base64(8)
+  end
+
+  def json_schema_uri attribute
+    case attribute.to_sym
+    when :metadata
+      "urn:entourage:#{group_type}:metadata"
+    else
+      "urn:entourage:#{attribute}"
+    end
+  end
+
+  def self.json_schema uri
+    schema = {
+      type: :object,
+      additionalProperties: false,
+      properties: {
+        '$id' => { type: :string, format: :uri }
+      }
+    }
+
+    schema[:properties] =
+      case uri
+      when 'urn:entourage:visit:metadata'
+        {
+          visited_user_first_name: { type: :string }
+        }
+      when 'urn:entourage:outing:metadata'
+        {
+          starts_at: { format: 'date-time-iso8601' }
+        }
+      else
+        {}
+      end
+
+    schema[:required] ||= schema[:properties].keys if schema[:properties].any?
+
+    schema
   end
 
   private
