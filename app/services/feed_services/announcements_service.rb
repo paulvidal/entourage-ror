@@ -32,24 +32,18 @@ module FeedServices
     def select_announcements
       announcements = []
 
-      return announcements unless user.community == :entourage
+      return announcements unless user.community == :entourage || ENV['STAGING'] == 'true'
 
-      onboarding_announcement = Onboarding::V1.announcement_for(area, user: user)
-
-      if onboarding_announcement
-        announcements.push onboarding_announcement
-        @metadata.merge!(onboarding_announcement: true, area: area)
-      else
-        announcements.push Announcement.new(
-          id: 11,
-          title: with_first_name("n'attendez plus pour agir !"),
-          body: "Conseils, rencontres, idées d'action auprès des SDF... Passez à l'action en discutant avec vos voisins solidaires.",
-          action: "J'agis",
-          author: User.find_by(email: "guillaume@entourage.social"),
-          webview: true,
-          position: 1
-        )
-      end
+      announcements.push Announcement.new(
+        id: 12,
+        title: "Vous aussi, devenez ambassadeurs d’Entourage dans votre quartier",
+        body: "Vous aimez Entourage ? On vous dit comment contribuer à la communauté ici !",
+        image_url: true,
+        action: "J'agis",
+        author: User.find_by(email: "claire@duizabo.fr"),
+        webview: true,
+        position: 1
+      )
 
       announcements.push Announcement.new(
         id: 3,

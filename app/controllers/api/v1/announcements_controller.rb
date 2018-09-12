@@ -1,8 +1,8 @@
 module Api
   module V1
     class AnnouncementsController < Api::V1::BaseController
-      skip_before_filter :authenticate_user!, only: [:icon, :avatar]
-      skip_before_filter :ensure_community!,  only: [:icon, :avatar]
+      skip_before_filter :authenticate_user!, only: [:icon, :avatar, :image]
+      skip_before_filter :ensure_community!,  only: [:icon, :avatar, :image]
 
       def icon
         icon = {
@@ -16,6 +16,7 @@ module Api
           9 => :heart,
           10 => :heart,
           11 => :megaphone,
+          12 => :megaphone,
         }[params[:id].to_i]
 
         redirect_to view_context.asset_url("assets/announcements/icons/#{icon}.png")
@@ -23,6 +24,10 @@ module Api
 
       def avatar
         redirect_to view_context.asset_url("assets/announcements/avatars/1.jpg")
+      end
+
+      def image
+        redirect_to view_context.asset_url("assets/announcements/images/1.jpg")
       end
 
       def redirect
@@ -58,6 +63,9 @@ module Api
           url = "https://blog.entourage.social/2018/05/17/fete-des-voisins-2018-invitons-aussi-nos-voisins-sdf/"
         when 11
           url = "https://blog.entourage.social/2017/04/28/quelles-actions-faire-avec-entourage/"
+        when 12
+          user_id = UserServices::EncodedId.encode(current_user.id)
+          url = "https://entourage-asso.typeform.com/to/U5MocH?user_id=#{user_id}"
         end
 
         mixpanel.track("Opened Announcement", { "Announcement" => id })

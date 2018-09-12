@@ -4,6 +4,7 @@ module V1
                :uuid,
                :title,
                :body,
+               :image_url,
                :action,
                :url,
                :icon_url
@@ -28,7 +29,7 @@ module V1
           id: author.id,
           display_name: author.first_name,
           avatar_url: avatar_url,
-          partner: nil
+          partner: author.default_partner.nil? ? nil : V1::PartnerSerializer.new(author.default_partner, scope: {user: author}, root: false).as_json
       }
     end
 
@@ -44,6 +45,11 @@ module V1
 
     def icon_url
       url_for(:icon, id: object.id)
+    end
+
+    def image_url
+      return if object.image_url != true
+      url_for(:image, id: object.id)
     end
 
     def url_for action, options={}
