@@ -1,0 +1,7 @@
+production:
+  api_key: <%= ENV['MAILCHIMP_API_KEY'] %>
+  lists:
+    newsletter:
+      id: f096e25002
+      interests:
+        dec_2018_donor: 471470182c
