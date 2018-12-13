@@ -20,6 +20,13 @@ class ChatMessage < ActiveRecord::Base
     message.messageable.touch unless message.message_type == 'status_update'
   end
 
+  def self.joins_group_join_requests
+    joins(%(
+      join join_requests on joinable_id   = messageable_id
+                        and joinable_type = messageable_type
+    ))
+  end
+
   def self.json_schema urn
     JsonSchemaService.base do
       case urn
