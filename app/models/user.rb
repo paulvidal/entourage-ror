@@ -71,7 +71,11 @@ class User < ActiveRecord::Base
   }
 
   before_validation do
-    self.partner_id = nil if targeting_profile != 'partner'
+    if targeting_profile == 'team'
+      self.partner_id ||= Partner.where(name: 'Entourage').pluck(:id).first
+    elsif targeting_profile != 'partner'
+      self.partner_id = nil
+    end
   end
 
   def validate_phone!
@@ -95,6 +99,10 @@ class User < ActiveRecord::Base
   end
 
   def validate_partner!
+    if targeting_profile == 'team'
+      return
+    end
+
     if targeting_profile == 'partner' && partner_id.blank?
       errors.add(:partner_id, :blank)
     end
